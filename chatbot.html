@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chatbot Interface</title>
+    <style>
+        /* Basic styling for the chat interface */
+        #chat-container {
+            width: 100%;
+            max-width: 400px;
+            margin: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+        #messages {
+            height: 300px;
+            overflow-y: scroll;
+            border-bottom: 1px solid #ccc;
+            margin-bottom: 10px;
+        }
+        .message {
+            margin: 5px 0;
+        }
+        .user-message {
+            text-align: right;
+            color: blue;
+        }
+        .bot-message {
+            text-align: left;
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <div id="chat-container">
+        <div id="messages"></div>
+        <input type="text" id="userInput" placeholder="Type your message here..." style="width: 80%;" />
+        <button id="sendButton">Send</button>
+    </div>
+
+    <script>
+        const messagesDiv = document.getElementById('messages');
+        const userInput = document.getElementById('userInput');
+        const sendButton = document.getElementById('sendButton');
+
+        sendButton.addEventListener('click', sendMessage);
+
+        function sendMessage() {
+            const message = userInput.value.trim();
+            if (message === '') return;
+
+            // Display user's message
+            appendMessage('You', message, 'user-message');
+
+            // Send the message to n8n webhook
+            fetch('https://sofrito.app.n8n.cloud/webhook-test/a4abot', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ message }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Display bot's response
+                appendMessage('Bot', data.response, 'bot-message');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+
+            userInput.value = '';
+        }
+
+        function appendMessage(sender, text, className) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${className}`;
+            messageDiv.innerHTML = `<strong>${sender}:</strong> ${text}`;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+    </script>
+</body>
+</html>
