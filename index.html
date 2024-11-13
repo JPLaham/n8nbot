@@ -122,50 +122,52 @@
             }
         }
 
-        async function sendMessage() {
-            const message = messageInput.value.trim();
-            if (!message || isWaitingForResponse) return;
+       async function sendMessage() {
+    const message = messageInput.value.trim();
+    if (!message || isWaitingForResponse) return;
 
-            isWaitingForResponse = true;
-            addMessage(message, true);
-            messageInput.value = '';
-            addLoadingIndicator();
+    isWaitingForResponse = true;
+    addMessage(message, true);
+    messageInput.value = '';
+    addLoadingIndicator();
 
-            try {
-                const response = await fetch('https://sofrito.app.n8n.cloud/webhook-test/chat', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        type: 'message',
-                        content: message
-                    })
-                });
+    try {
+        const response = await fetch('https://sofrito.app.n8n.cloud/webhook/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                message: message  // Changed from content to message
+            })
+        });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const data = await response.json();
-                removeLoadingIndicator();
-                
-                if (data && data.response) {
-                    addMessage(data.response);
-                } else if (data && data.error) {
-                    addMessage('Error: ' + data.error);
-                } else {
-                    addMessage('Received response but no message found.');
-                }
-            } catch (error) {
-                removeLoadingIndicator();
-                addMessage('Sorry, I encountered an error. Please try again. Error: ' + error.message);
-                console.error('Error details:', error);
-            } finally {
-                isWaitingForResponse = false;
-            }
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
+
+        const data = await response.json();
+        console.log('Response received:', data); // Debug log
+        removeLoadingIndicator();
+        
+        // Check both possible response formats
+        const botMessage = data.message || (data.responseBody && data.responseBody.message);
+        
+        if (botMessage) {
+            addMessage(botMessage);
+        } else {
+            console.error('Unexpected response structure:', data);
+            addMessage('Received response but no message found. Response:', JSON.stringify(data));
+        }
+    } catch (error) {
+        removeLoadingIndicator();
+        console.error('Error details:', error);
+        addMessage('Sorry, I encountered an error. Please try again. Error: ' + error.message);
+    } finally {
+        isWaitingForResponse = false;
+    }
+}
 
         sendButton.addEventListener('click', sendMessage);
         messageInput.addEventListener('keypress', (e) => {
