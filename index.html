@@ -22,13 +22,14 @@
     <div id="n8n-chat"></div>
 
     <!-- Include the chat widget JavaScript using ES Modules -->
-    <script type="module">
-        import { createChat } from 'https://cdn.jsdelivr.net/npm/n8n-chat@latest/dist/chat.bundle.es.js';
+   <script type="module">
+    import { createChat } from './js/chat.bundle.es.js';
 
-        createChat({
-            webhookUrl: 'https://sofrito.app.n8n.cloud/webhook/chat', // Ensure this matches your webhook URL
-            parentElementSelector: '#n8n-chat'
-        });
-    </script>
+    createChat({
+        webhookUrl: 'https://sofrito.app.n8n.cloud/webhook/chat',
+        parentElementSelector: '#n8n-chat'
+    });
+</script>
+
 </body>
 </html>
